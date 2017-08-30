@@ -2479,11 +2479,17 @@ function(__set_common_target_properties target)
       endif()
     endif()
 
+    target_compile_definitions(${target} PRIVATE LINUX=1)
+
     foreach(config ${JUCER_PROJECT_CONFIGURATIONS})
       if(${JUCER_CONFIGURATION_IS_DEBUG_${config}})
         target_compile_definitions(${target} PRIVATE
           $<$<CONFIG:${config}>:DEBUG=1>
           $<$<CONFIG:${config}>:_DEBUG=1>
+        )
+        target_compile_options(${target} PRIVATE
+          $<$<CONFIG:${config}>:-g>
+          $<$<CONFIG:${config}>:-ggdb>
         )
       else()
         target_compile_definitions(${target} PRIVATE
