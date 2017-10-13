@@ -33,7 +33,8 @@ jucer_project_settings(
   BUNDLE_IDENTIFIER "com.yourcompany.UnitTestRunner"
   BINARYDATACPP_SIZE_LIMIT "Default"
   # BINARYDATA_NAMESPACE
-  PREPROCESSOR_DEFINITIONS "JUCE_UNIT_TESTS=1"
+  PREPROCESSOR_DEFINITIONS
+    "JUCE_UNIT_TESTS=1"
 )
 
 jucer_project_files("UnitTestRunner/Source"

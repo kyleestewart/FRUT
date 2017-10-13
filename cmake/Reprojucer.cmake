@@ -106,7 +106,6 @@ function(jucer_project_settings)
     "PROJECT_VERSION"
     "PROJECT_TYPE"
     "BINARYDATACPP_SIZE_LIMIT"
-    "PREPROCESSOR_DEFINITIONS"
   )
   set(regular_one_value_keywords
     "COMPANY_NAME"
@@ -115,8 +114,14 @@ function(jucer_project_settings)
     "BUNDLE_IDENTIFIER"
     "BINARYDATA_NAMESPACE"
   )
+  set(regular_multi_value_keywords
+    "PREPROCESSOR_DEFINITIONS"
+  )
   cmake_parse_arguments(arg
-    "" "${special_one_value_keywords};${regular_one_value_keywords}" "" ${ARGN}
+    ""
+    "${special_one_value_keywords};${regular_one_value_keywords}"
+    "${regular_multi_value_keywords}"
+    ${ARGN}
   )
   if(NOT "${arg_UNPARSED_ARGUMENTS}" STREQUAL "")
     message(FATAL_ERROR "Unknown arguments: ${arg_UNPARSED_ARGUMENTS}")
@@ -169,12 +174,7 @@ function(jucer_project_settings)
     set(JUCER_BINARYDATACPP_SIZE_LIMIT "${value}" PARENT_SCOPE)
   endif()
 
-  if(NOT "${arg_PREPROCESSOR_DEFINITIONS}" STREQUAL "")
-    string(REPLACE "\n" ";" preprocessor_defs "${arg_PREPROCESSOR_DEFINITIONS}")
-    set(JUCER_PREPROCESSOR_DEFINITIONS "${preprocessor_defs}" PARENT_SCOPE)
-  endif()
-
-  foreach(keyword ${regular_one_value_keywords})
+  foreach(keyword ${regular_one_value_keywords} ${regular_multi_value_keywords})
     if(NOT "${arg_${keyword}}" STREQUAL "")
       set(JUCER_${keyword} ${arg_${keyword}} PARENT_SCOPE)
     endif()

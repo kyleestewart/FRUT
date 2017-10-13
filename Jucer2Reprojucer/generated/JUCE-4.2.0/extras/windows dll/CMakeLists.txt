@@ -33,7 +33,8 @@ jucer_project_settings(
   BUNDLE_IDENTIFIER "com.rawmaterialsoftware.juce"
   BINARYDATACPP_SIZE_LIMIT "Default"
   # BINARYDATA_NAMESPACE
-  PREPROCESSOR_DEFINITIONS "JUCE_DLL_BUILD=1"
+  PREPROCESSOR_DEFINITIONS
+    "JUCE_DLL_BUILD=1"
 )
 
 jucer_project_module(

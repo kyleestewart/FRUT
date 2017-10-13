@@ -355,8 +355,22 @@ int main(int argc, char* argv[])
         << "  PROJECT_TYPE \"" << projectTypeDescription << "\"\n"
         << "  " << projectSetting("BUNDLE_IDENTIFIER", "bundleIdentifier") << "\n"
         << "  BINARYDATACPP_SIZE_LIMIT \"" << maxBinaryFileSize << "\"\n"
-        << "  " << projectSetting("BINARYDATA_NAMESPACE", "binaryDataNamespace") << "\n"
-        << "  " << projectSetting("PREPROCESSOR_DEFINITIONS", "defines") << "\n";
+        << "  " << projectSetting("BINARYDATA_NAMESPACE", "binaryDataNamespace") << "\n";
+
+    const auto defines = jucerProject.getProperty("defines").toString();
+    if (defines.isEmpty())
+    {
+      out << "  # PREPROCESSOR_DEFINITIONS\n";
+    }
+    else
+    {
+      out << "  PREPROCESSOR_DEFINITIONS\n";
+      const auto definitions = split("\n", defines.toStdString());
+      for (const auto definition : definitions)
+      {
+        out << "    \"" << escape("\\\";", definition) << "\"\n";
+      }
+    }
 
     writeUserNotes(out, jucerProject);
 
