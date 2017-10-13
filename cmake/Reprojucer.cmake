@@ -489,157 +489,168 @@ function(jucer_export_target exporter)
     )
   endif()
 
-  unset(tag)
-  foreach(element ${ARGN})
-    if(NOT DEFINED tag)
-      set(tag ${element})
+  cmake_parse_arguments(arg "" "${export_target_settings_tags}" "" ${ARGN})
+  if(NOT "${arg_UNPARSED_ARGUMENTS}" STREQUAL "")
+    message(FATAL_ERROR "Unknown arguments: ${arg_UNPARSED_ARGUMENTS}")
+  endif()
 
-      if(NOT "${tag}" IN_LIST export_target_settings_tags)
-        message(FATAL_ERROR "Unsupported export target setting: ${tag}\n"
-          "Supported export target settings: ${export_target_settings_tags}"
-        )
-      endif()
-    else()
-      set(value ${element})
+  if(NOT "${arg_TARGET_PROJECT_FOLDER}" STREQUAL "")
+    string(REPLACE "\\" "/" value "${arg_TARGET_PROJECT_FOLDER}")
+    __abs_path_based_on_jucer_project_dir("${value}" value)
+    set(JUCER_TARGET_PROJECT_FOLDER ${value} PARENT_SCOPE)
+  endif()
 
-      if(tag STREQUAL "TARGET_PROJECT_FOLDER")
-        string(REPLACE "\\" "/" value "${value}")
-        __abs_path_based_on_jucer_project_dir("${value}" value)
-        set(JUCER_TARGET_PROJECT_FOLDER ${value} PARENT_SCOPE)
+  if(NOT "${arg_VST_SDK_FOLDER}" STREQUAL "")
+    string(REPLACE "\\" "/" value "${arg_VST_SDK_FOLDER}")
+    __abs_path_based_on_jucer_project_dir("${value}" value)
+    set(JUCER_VST_SDK_FOLDER ${value} PARENT_SCOPE)
+  endif()
 
-      elseif(tag STREQUAL "VST_SDK_FOLDER")
-        string(REPLACE "\\" "/" value "${value}")
-        __abs_path_based_on_jucer_project_dir("${value}" value)
-        set(JUCER_VST_SDK_FOLDER ${value} PARENT_SCOPE)
+  if(NOT "${arg_VST3_SDK_FOLDER}" STREQUAL "")
+    string(REPLACE "\\" "/" value "${arg_VST3_SDK_FOLDER}")
+    __abs_path_based_on_jucer_project_dir("${value}" value)
+    set(JUCER_VST3_SDK_FOLDER ${value} PARENT_SCOPE)
+  endif()
 
-      elseif(tag STREQUAL "VST3_SDK_FOLDER")
-        string(REPLACE "\\" "/" value "${value}")
-        __abs_path_based_on_jucer_project_dir("${value}" value)
-        set(JUCER_VST3_SDK_FOLDER ${value} PARENT_SCOPE)
+  if(NOT "${arg_EXTRA_PREPROCESSOR_DEFINITIONS}" STREQUAL "")
+    string(REPLACE "\n" ";" value "${arg_EXTRA_PREPROCESSOR_DEFINITIONS}")
+    set(JUCER_EXTRA_PREPROCESSOR_DEFINITIONS ${value} PARENT_SCOPE)
+  endif()
 
-      elseif(tag STREQUAL "EXTRA_PREPROCESSOR_DEFINITIONS")
-        string(REPLACE "\n" ";" value "${value}")
-        set(JUCER_EXTRA_PREPROCESSOR_DEFINITIONS ${value} PARENT_SCOPE)
+  if(NOT "${arg_EXTRA_COMPILER_FLAGS}" STREQUAL "")
+    string(REPLACE "\n" " " value "${arg_EXTRA_COMPILER_FLAGS}")
+    string(REPLACE " " ";" value "${value}")
+    set(JUCER_EXTRA_COMPILER_FLAGS ${value} PARENT_SCOPE)
+  endif()
 
-      elseif(tag STREQUAL "EXTRA_COMPILER_FLAGS")
-        string(REPLACE "\n" " " value "${value}")
-        string(REPLACE " " ";" value "${value}")
-        set(JUCER_EXTRA_COMPILER_FLAGS ${value} PARENT_SCOPE)
+  if(NOT "${arg_EXTRA_LINKER_FLAGS}" STREQUAL "")
+    string(REPLACE "\n" " " value "${arg_EXTRA_LINKER_FLAGS}")
+    set(JUCER_EXTRA_LINKER_FLAGS ${value} PARENT_SCOPE)
+  endif()
 
-      elseif(tag STREQUAL "EXTRA_LINKER_FLAGS")
-        string(REPLACE "\n" " " value "${value}")
-        set(JUCER_EXTRA_LINKER_FLAGS ${value} PARENT_SCOPE)
+  if(NOT "${arg_EXTERNAL_LIBRARIES_TO_LINK}" STREQUAL "")
+    string(REPLACE "\n" ";" value "${arg_EXTERNAL_LIBRARIES_TO_LINK}")
+    set(JUCER_EXTERNAL_LIBRARIES_TO_LINK ${value} PARENT_SCOPE)
+  endif()
 
-      elseif(tag STREQUAL "EXTERNAL_LIBRARIES_TO_LINK")
-        string(REPLACE "\n" ";" value "${value}")
-        set(JUCER_EXTERNAL_LIBRARIES_TO_LINK ${value} PARENT_SCOPE)
-
-      elseif(tag STREQUAL "ICON_SMALL")
-        if(NOT value STREQUAL "<None>")
-          __abs_path_based_on_jucer_project_dir("${value}" value)
-          set(JUCER_SMALL_ICON ${value} PARENT_SCOPE)
-        endif()
-
-      elseif(tag STREQUAL "ICON_LARGE")
-        if(NOT value STREQUAL "<None>")
-          __abs_path_based_on_jucer_project_dir("${value}" value)
-          set(JUCER_LARGE_ICON ${value} PARENT_SCOPE)
-        endif()
-
-      elseif(tag STREQUAL "CUSTOM_XCODE_RESOURCE_FOLDERS")
-        string(REPLACE "\n" ";" value "${value}")
-        set(resource_folders)
-        foreach(folder ${value})
-          __abs_path_based_on_jucer_project_dir("${folder}" abs_folder)
-          list(APPEND resource_folders "${abs_folder}")
-        endforeach()
-        set(JUCER_CUSTOM_XCODE_RESOURCE_FOLDERS ${resource_folders} PARENT_SCOPE)
-
-      elseif(tag STREQUAL "DOCUMENT_FILE_EXTENSIONS")
-        string(REPLACE "," ";" value "${value}")
-        set(JUCER_DOCUMENT_FILE_EXTENSIONS ${value} PARENT_SCOPE)
-
-      elseif(tag STREQUAL "EXTRA_FRAMEWORKS")
-        string(REPLACE "," ";" value "${value}")
-        string(REPLACE " " "" value "${value}")
-        set(JUCER_EXTRA_FRAMEWORKS ${value} PARENT_SCOPE)
-
-      elseif(tag STREQUAL "CUSTOM_PLIST")
-        set(JUCER_CUSTOM_PLIST "${value}" PARENT_SCOPE)
-
-      elseif(tag STREQUAL "PREBUILD_SHELL_SCRIPT")
-        set(script_content "${value}")
-        configure_file("${Reprojucer_templates_DIR}/script.in" "prebuild.sh" @ONLY)
-        set(JUCER_PREBUILD_SHELL_SCRIPT
-          "${CMAKE_CURRENT_BINARY_DIR}/prebuild.sh" PARENT_SCOPE
-        )
-
-      elseif(tag STREQUAL "POSTBUILD_SHELL_SCRIPT")
-        set(script_content "${value}")
-        configure_file("${Reprojucer_templates_DIR}/script.in" "postbuild.sh" @ONLY)
-        set(JUCER_POSTBUILD_SHELL_SCRIPT
-          "${CMAKE_CURRENT_BINARY_DIR}/postbuild.sh" PARENT_SCOPE
-        )
-
-      elseif(tag STREQUAL "DEVELOPMENT_TEAM_ID")
-        message(WARNING "Reprojucer.cmake doesn't support the setting "
-          "DEVELOPMENT_TEAM_ID (\"Development Team ID\" in Projucer). If you would like "
-          "Reprojucer.cmake to support this setting, please leave a comment on the issue "
-          "\"Reprojucer.cmake doesn't support the setting DEVELOPMENT_TEAM_ID\" on "
-          "GitHub: https://github.com/McMartin/FRUT/issues/251"
-        )
-
-      elseif(tag STREQUAL "PLATFORM_TOOLSET")
-        if((exporter STREQUAL "Visual Studio 2015"
-              AND (value STREQUAL "v140" OR value STREQUAL "v140_xp"
-                OR value STREQUAL "CTP_Nov2013"))
-            OR (exporter STREQUAL "Visual Studio 2013"
-              AND (value STREQUAL "v120" OR value STREQUAL "v120_xp"
-                OR value STREQUAL "Windows7" OR value STREQUAL "CTP_Nov2013")))
-          if(NOT value STREQUAL "${CMAKE_VS_PLATFORM_TOOLSET}")
-            message(FATAL_ERROR "You must call `cmake -T ${value}` in order to build with"
-              " the toolset \"${value}\"."
-            )
-          endif()
-        elseif(NOT value STREQUAL "(default)")
-          message(FATAL_ERROR "Unsupported value for PLATFORM_TOOLSET: \"${value}\"")
-        endif()
-
-      elseif(tag STREQUAL "USE_IPP_LIBRARY")
-        set(ipp_library_values
-          "Yes (Default Mode)"
-          "Multi-Threaded Static Library"
-          "Single-Threaded Static Library"
-          "Multi-Threaded DLL"
-          "Single-Threaded DLL"
-        )
-        if("${value}" IN_LIST ipp_library_values)
-          message(WARNING "Reprojucer.cmake doesn't support the setting USE_IPP_LIBRARY "
-            "(\"Use IPP Library\" in Projucer). If you would like Reprojucer.cmake to "
-            "support this setting, please leave a comment on the issue "
-            "\"Reprojucer.cmake doesn't support the setting USE_IPP_LIBRARY\" on GitHub: "
-            "https://github.com/McMartin/FRUT/issues/252"
-          )
-        elseif(NOT value STREQUAL "No")
-          message(FATAL_ERROR "Unsupported value for USE_IPP_LIBRARY: \"${value}\"")
-        endif()
-
-      elseif(tag STREQUAL "CXX_STANDARD_TO_USE")
-        if(value MATCHES "^C\\+\\+(03|11|14)$")
-          set(JUCER_CXX_LANGUAGE_STANDARD ${value} PARENT_SCOPE)
-        else()
-          message(FATAL_ERROR "Unsupported value for CXX_STANDARD_TO_USE: \"${value}\"")
-        endif()
-
-      elseif(tag STREQUAL "PKGCONFIG_LIBRARIES")
-        string(REPLACE " " ";" value "${value}")
-        set(JUCER_PKGCONFIG_LIBRARIES ${value} PARENT_SCOPE)
-
-      endif()
-
-      unset(tag)
+  if(NOT "${arg_ICON_SMALL}" STREQUAL "")
+    if(NOT "${arg_ICON_SMALL}" STREQUAL "<None>")
+      __abs_path_based_on_jucer_project_dir("${arg_ICON_SMALL}" value)
+      set(JUCER_SMALL_ICON ${value} PARENT_SCOPE)
     endif()
-  endforeach()
+  endif()
+
+  if(NOT "${arg_ICON_LARGE}" STREQUAL "")
+    if(NOT "${arg_ICON_LARGE}" STREQUAL "<None>")
+      __abs_path_based_on_jucer_project_dir("${arg_ICON_LARGE}" value)
+      set(JUCER_LARGE_ICON ${value} PARENT_SCOPE)
+    endif()
+  endif()
+
+  if(NOT "${arg_CUSTOM_XCODE_RESOURCE_FOLDERS}" STREQUAL "")
+    string(REPLACE "\n" ";" value "${arg_CUSTOM_XCODE_RESOURCE_FOLDERS}")
+    set(resource_folders)
+    foreach(folder ${value})
+      __abs_path_based_on_jucer_project_dir("${folder}" abs_folder)
+      list(APPEND resource_folders "${abs_folder}")
+    endforeach()
+    set(JUCER_CUSTOM_XCODE_RESOURCE_FOLDERS ${resource_folders} PARENT_SCOPE)
+  endif()
+
+  if(NOT "${arg_DOCUMENT_FILE_EXTENSIONS}" STREQUAL "")
+    string(REPLACE "," ";" value "${arg_DOCUMENT_FILE_EXTENSIONS}")
+    set(JUCER_DOCUMENT_FILE_EXTENSIONS ${value} PARENT_SCOPE)
+  endif()
+
+  if(NOT "${arg_EXTRA_FRAMEWORKS}" STREQUAL "")
+    string(REPLACE "," ";" value "${arg_EXTRA_FRAMEWORKS}")
+    string(REPLACE " " "" value "${value}")
+    set(JUCER_EXTRA_FRAMEWORKS ${value} PARENT_SCOPE)
+  endif()
+
+  if(NOT "${arg_CUSTOM_PLIST}" STREQUAL "")
+    set(JUCER_CUSTOM_PLIST "${arg_CUSTOM_PLIST}" PARENT_SCOPE)
+  endif()
+
+  if(NOT "${arg_PREBUILD_SHELL_SCRIPT}" STREQUAL "")
+    set(script_content "${arg_PREBUILD_SHELL_SCRIPT}")
+    configure_file("${Reprojucer_templates_DIR}/script.in" "prebuild.sh" @ONLY)
+    set(JUCER_PREBUILD_SHELL_SCRIPT
+      "${CMAKE_CURRENT_BINARY_DIR}/prebuild.sh" PARENT_SCOPE
+    )
+  endif()
+
+  if(NOT "${arg_POSTBUILD_SHELL_SCRIPT}" STREQUAL "")
+    set(script_content "${arg_POSTBUILD_SHELL_SCRIPT}")
+    configure_file("${Reprojucer_templates_DIR}/script.in" "postbuild.sh" @ONLY)
+    set(JUCER_POSTBUILD_SHELL_SCRIPT
+      "${CMAKE_CURRENT_BINARY_DIR}/postbuild.sh" PARENT_SCOPE
+    )
+  endif()
+
+  if (NOT "${arg_DEVELOPMENT_TEAM_ID}" STREQUAL "")
+    message(WARNING "Reprojucer.cmake doesn't support the setting "
+      "DEVELOPMENT_TEAM_ID (\"Development Team ID\" in Projucer). If you would like "
+      "Reprojucer.cmake to support this setting, please leave a comment on the issue "
+      "\"Reprojucer.cmake doesn't support the setting DEVELOPMENT_TEAM_ID\" on "
+      "GitHub: https://github.com/McMartin/FRUT/issues/251"
+    )
+  endif()
+
+  if(NOT "${arg_PLATFORM_TOOLSET}" STREQUAL "")
+    set(value "${arg_PLATFORM_TOOLSET}")
+    if((exporter STREQUAL "Visual Studio 2015"
+          AND (value STREQUAL "v140" OR value STREQUAL "v140_xp"
+            OR value STREQUAL "CTP_Nov2013"))
+        OR (exporter STREQUAL "Visual Studio 2013"
+          AND (value STREQUAL "v120" OR value STREQUAL "v120_xp"
+            OR value STREQUAL "Windows7" OR value STREQUAL "CTP_Nov2013")))
+      if(NOT value STREQUAL "${CMAKE_VS_PLATFORM_TOOLSET}")
+        message(FATAL_ERROR "You must call `cmake -T ${value}` in order to build with"
+          " the toolset \"${value}\"."
+        )
+      endif()
+    elseif(NOT value STREQUAL "(default)")
+      message(FATAL_ERROR
+        "Unsupported value for PLATFORM_TOOLSET: \"${value}\"\n"
+      )
+    endif()
+  endif()
+
+  if(NOT "${arg_USE_IPP_LIBRARY}" STREQUAL "")
+    set(ipp_library_values
+      "Yes (Default Mode)"
+      "Multi-Threaded Static Library"
+      "Single-Threaded Static Library"
+      "Multi-Threaded DLL"
+      "Single-Threaded DLL"
+    )
+    if("${value}" IN_LIST ipp_library_values)
+      message(WARNING "Reprojucer.cmake doesn't support the setting USE_IPP_LIBRARY "
+        "(\"Use IPP Library\" in Projucer). If you would like Reprojucer.cmake to "
+        "support this setting, please leave a comment on the issue "
+        "\"Reprojucer.cmake doesn't support the setting USE_IPP_LIBRARY\" on GitHub: "
+        "https://github.com/McMartin/FRUT/issues/252"
+      )
+    elseif(NOT value STREQUAL "No")
+      message(FATAL_ERROR "Unsupported value for USE_IPP_LIBRARY: \"${value}\"")
+    endif()
+  endif()
+
+  if(NOT "${arg_CXX_STANDARD_TO_USE}" STREQUAL "")
+    if(arg_CXX_STANDARD_TO_USE MATCHES "^C\\+\\+(03|11|14)$")
+      set(JUCER_CXX_LANGUAGE_STANDARD ${arg_CXX_STANDARD_TO_USE} PARENT_SCOPE)
+    else()
+      message(FATAL_ERROR
+        "Unsupported value for CXX_STANDARD_TO_USE: \"${arg_CXX_STANDARD_TO_USE}\"\n"
+      )
+    endif()
+  endif()
+
+  if(NOT "${arg_PKGCONFIG_LIBRARIES}" STREQUAL "")
+    string(REPLACE " " ";" value "${arg_PKGCONFIG_LIBRARIES}")
+    set(JUCER_PKGCONFIG_LIBRARIES ${value} PARENT_SCOPE)
+  endif()
 
 endfunction()
 
