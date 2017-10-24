@@ -101,85 +101,82 @@ endfunction()
 
 function(jucer_project_settings)
 
-  if(NOT "PROJECT_NAME" IN_LIST ARGN)
-    message(FATAL_ERROR "Missing PROJECT_NAME argument")
-  endif()
-
-  if(NOT "PROJECT_TYPE" IN_LIST ARGN)
-    message(FATAL_ERROR "Missing PROJECT_TYPE argument")
-  endif()
-
-  set(project_setting_tags
+  set(special_one_value_keywords
     "PROJECT_NAME"
     "PROJECT_VERSION"
+    "PROJECT_TYPE"
+    "BINARYDATACPP_SIZE_LIMIT"
+    "PREPROCESSOR_DEFINITIONS"
+  )
+  set(regular_one_value_keywords
     "COMPANY_NAME"
     "COMPANY_WEBSITE"
     "COMPANY_EMAIL"
-    "PROJECT_TYPE"
     "BUNDLE_IDENTIFIER"
-    "BINARYDATACPP_SIZE_LIMIT"
     "BINARYDATA_NAMESPACE"
-    "PREPROCESSOR_DEFINITIONS"
   )
+  cmake_parse_arguments(arg
+    "" "${special_one_value_keywords};${regular_one_value_keywords}" "" ${ARGN}
+  )
+  if(NOT "${arg_UNPARSED_ARGUMENTS}" STREQUAL "")
+    message(FATAL_ERROR "Unknown arguments: ${arg_UNPARSED_ARGUMENTS}")
+  endif()
 
+  if("${arg_PROJECT_NAME}" STREQUAL "")
+    message(FATAL_ERROR "Missing PROJECT_NAME argument")
+  endif()
+  set(JUCER_PROJECT_NAME "${arg_PROJECT_NAME}" PARENT_SCOPE)
+
+  if("${arg_PROJECT_TYPE}" STREQUAL "")
+    message(FATAL_ERROR "Missing PROJECT_TYPE argument")
+  endif()
   set(project_types "GUI Application" "Console Application" "Static Library"
     "Dynamic Library" "Audio Plug-in"
   )
+  if(NOT "${arg_PROJECT_TYPE}" IN_LIST project_types)
+    message(FATAL_ERROR "Unsupported project type: \"${arg_PROJECT_TYPE}\"\n"
+      "Supported project types: ${project_types}"
+    )
+  endif()
+  set(JUCER_PROJECT_TYPE "${arg_PROJECT_TYPE}" PARENT_SCOPE)
 
-  set(size_limit_descs "Default" "20.0 MB" "10.0 MB" "6.0 MB" "2.0 MB" "1.0 MB" "512.0 KB"
-    "256.0 KB" "128.0 KB" "64.0 KB"
-  )
-  set(size_limits 10240 20480 10240 6144 2048 1024 512 256 128 64)
+  if(NOT "${arg_PROJECT_VERSION}" STREQUAL "")
+    string(REGEX MATCH ".+\\..+\\..+(\\..+)?" version_match "${arg_PROJECT_VERSION}")
+    if(NOT arg_PROJECT_VERSION STREQUAL version_match)
+      message(WARNING
+        "The PROJECT_VERSION doesn't seem to be in the format major.minor.point[.point]"
+      )
+    endif()
+    set(JUCER_PROJECT_VERSION "${arg_PROJECT_VERSION}" PARENT_SCOPE)
 
-  unset(tag)
-  foreach(element ${ARGN})
-    if(NOT DEFINED tag)
-      set(tag ${element})
+    __version_to_hex("${arg_PROJECT_VERSION}" hex_value)
+    set(JUCER_PROJECT_VERSION_AS_HEX "${hex_value}" PARENT_SCOPE)
+  endif()
 
-      if(NOT "${tag}" IN_LIST project_setting_tags)
-        message(FATAL_ERROR "Unsupported project setting: ${tag}\n"
-          "Supported project settings: ${project_setting_tags}"
-        )
-      endif()
-    else()
-      set(value ${element})
+  if(NOT "${arg_BINARYDATACPP_SIZE_LIMIT}" STREQUAL "")
+    set(size_limit_descs "Default" "20.0 MB" "10.0 MB" "6.0 MB" "2.0 MB" "1.0 MB"
+      "512.0 KB" "256.0 KB" "128.0 KB" "64.0 KB"
+    )
+    set(size_limits 10240 20480 10240 6144 2048 1024 512 256 128 64)
 
-      if(tag STREQUAL "PROJECT_VERSION")
-        string(REGEX MATCH ".+\\..+\\..+(\\..+)?" version_match "${value}")
-        if(NOT value STREQUAL version_match)
-          message(WARNING
-            "The PROJECT_VERSION doesn't seem to be in the format "
-            "major.minor.point[.point]"
-          )
-        endif()
-        __version_to_hex("${value}" hex_value)
-        set(JUCER_PROJECT_VERSION_AS_HEX "${hex_value}" PARENT_SCOPE)
+    list(FIND size_limit_descs "${arg_BINARYDATACPP_SIZE_LIMIT}" size_limit_index)
+    if(size_limit_index EQUAL -1)
+      message(FATAL_ERROR "Unsupported value for BINARYDATACPP_SIZE_LIMIT: "
+        "\"${arg_BINARYDATACPP_SIZE_LIMIT}\"\n Supported values: ${size_limit_descs}"
+      )
+    endif()
+    list(GET size_limits ${size_limit_index} value)
+    set(JUCER_BINARYDATACPP_SIZE_LIMIT "${value}" PARENT_SCOPE)
+  endif()
 
-      elseif(tag STREQUAL "PROJECT_TYPE")
-        if(NOT "${value}" IN_LIST project_types)
-          message(FATAL_ERROR "Unsupported project type: \"${value}\"\n"
-            "Supported project types: ${project_types}"
-          )
-        endif()
+  if(NOT "${arg_PREPROCESSOR_DEFINITIONS}" STREQUAL "")
+    string(REPLACE "\n" ";" preprocessor_defs "${arg_PREPROCESSOR_DEFINITIONS}")
+    set(JUCER_PREPROCESSOR_DEFINITIONS "${preprocessor_defs}" PARENT_SCOPE)
+  endif()
 
-      elseif(tag STREQUAL "BINARYDATACPP_SIZE_LIMIT")
-        list(FIND size_limit_descs "${value}" size_limit_index)
-        if(size_limit_index EQUAL -1)
-          message(FATAL_ERROR
-            "Unsupported value for BINARYDATACPP_SIZE_LIMIT: \"${value}\"\n"
-            "Supported values: ${size_limit_descs}"
-          )
-        endif()
-        list(GET size_limits ${size_limit_index} value)
-
-      elseif(tag STREQUAL "PREPROCESSOR_DEFINITIONS")
-        string(REPLACE "\n" ";" value "${value}")
-
-      endif()
-
-      set(JUCER_${tag} "${value}" PARENT_SCOPE)
-
-      unset(tag)
+  foreach(keyword ${regular_one_value_keywords})
+    if(NOT "${arg_${keyword}}" STREQUAL "")
+      set(JUCER_${keyword} ${arg_${keyword}} PARENT_SCOPE)
     endif()
   endforeach()
 
