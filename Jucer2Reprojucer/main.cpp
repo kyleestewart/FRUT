@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with FRUT.  If not, see <http://www.gnu.org/licenses/>.
 
+#include "keywords.hpp"
+
 #include "JuceHeader.h"
 
 #include <cstdlib>
@@ -144,6 +146,62 @@ std::string getSetting(const juce::ValueTree& valueTree,
   }
 
   return "# " + cmakeTag;
+}
+
+
+template <Keywords>
+std::string getProperty2(const juce::ValueTree& valueTree,
+                         const juce::Identifier& property)
+{
+  return valueTree.getProperty(property).toString().toStdString();
+}
+
+template <>
+std::string getProperty2<CXX_LANGUAGE_STANDARD>(const juce::ValueTree& valueTree,
+                                                const juce::Identifier& property)
+{
+  const auto value = valueTree.getProperty(property).toString();
+
+  if (value == "")
+    return "Use Default";
+
+  if (value == "c++98")
+    return "C++98";
+
+  if (value == "gnu++98")
+    return "GNU++98";
+
+  if (value == "c++11")
+    return "C++11";
+
+  if (value == "gnu++11")
+    return "GNU++11";
+
+  if (value == "c++14")
+    return "C++14";
+
+  if (value == "gnu++14")
+    return "GNU++14";
+
+  return {};
+}
+
+
+template <Keywords AKeyword>
+std::string getSetting2(const juce::ValueTree& valueTree,
+                        const juce::Identifier& property)
+{
+  if (valueTree.hasProperty(property))
+  {
+    const auto value = getProperty2<AKeyword>(valueTree, property);
+
+    if (!value.empty())
+    {
+      return getKeyword<AKeyword>() + " \"" + escape("\\\";", value) + "\"";
+    }
+  }
+
+  return "# " + getKeyword<AKeyword>();
 }
 
 
@@ -353,7 +411,7 @@ int main(int argc, char* argv[])
     wLn("jucer_project_begin(");
     wLn("  JUCER_VERSION \"", jucerVersion, "\"");
     wLn("  PROJECT_FILE \"${", escapedJucerFileName, "_FILE}\"");
-    wLn("  ", getSetting(jucerProject, "PROJECT_ID", "id"));
+    wLn("  ", getSetting2<PROJECT_ID>(jucerProject, "id"));
     wLn(")");
     wLn();
   }
@@ -1070,43 +1128,8 @@ int main(int argc, char* argv[])
 
             wLn("  ",
                 getSetting(configuration, "CUSTOM_XCODE_FLAGS", "customXcodeFlags"));
-
-            const auto cppLanguageStandard = [&configuration]() -> std::string {
-              const auto value =
-                configuration.getProperty("cppLanguageStandard").toString();
-
-              if (value == "")
-                return "Use Default";
-
-              if (value == "c++98")
-                return "C++98";
-
-              if (value == "gnu++98")
-                return "GNU++98";
-
-              if (value == "c++11")
-                return "C++11";
-
-              if (value == "gnu++11")
-                return "GNU++11";
-
-              if (value == "c++14")
-                return "C++14";
-
-              if (value == "gnu++14")
-                return "GNU++14";
-
-              return {};
-            }();
-
-            if (cppLanguageStandard.empty())
-            {
-              wLn("  # CXX_LANGUAGE_STANDARD");
-            }
-            else
-            {
-              wLn("  CXX_LANGUAGE_STANDARD \"", cppLanguageStandard, "\"");
-            }
+            wLn("  ",
+                getSetting2<CXX_LANGUAGE_STANDARD>(configuration, "cppLanguageStandard"));
 
             const auto cppLibType = [&configuration]() -> std::string {
               const auto value = configuration.getProperty("cppLibType").toString();
