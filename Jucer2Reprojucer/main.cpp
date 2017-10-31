@@ -140,6 +140,25 @@ std::string getSetting(const juce::ValueTree& valueTree,
 }
 
 
+std::string getSetting(const juce::ValueTree& valueTree,
+                       const std::string& cmakeTag,
+                       const juce::Identifier& property,
+                       std::function<std::string()> valueFunction)
+{
+  if (valueTree.hasProperty(property))
+  {
+    const auto value = valueFunction();
+
+    if (!value.empty())
+    {
+      return cmakeTag + " \"" + escape("\\\";", value) + "\"";
+    }
+  }
+
+  return "# " + cmakeTag;
+}
+
+
 std::string getOnOffSetting(const juce::ValueTree& valueTree,
                             const std::string& cmakeTag,
                             const juce::Identifier& property)
