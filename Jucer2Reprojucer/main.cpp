@@ -122,13 +122,20 @@ std::vector<std::string> split(const std::string& sep, const std::string& value)
 }
 
 
+std::string getProperty(const juce::ValueTree& valueTree,
+                        const juce::Identifier& property)
+{
+  return valueTree.getProperty(property).toString().toStdString();
+}
+
+
 std::string getSetting(const juce::ValueTree& valueTree,
                        const std::string& cmakeTag,
                        const juce::Identifier& property)
 {
   if (valueTree.hasProperty(property))
   {
-    const auto value = valueTree.getProperty(property).toString().toStdString();
+    const auto value = getProperty(valueTree, property);
 
     if (!value.empty())
     {
