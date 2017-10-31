@@ -183,11 +183,11 @@ juce::ValueTree getChildWithPropertyRecursively(const juce::ValueTree& valueTree
 
 void writeUserNotes(std::ostream& out, const juce::ValueTree& valueTree)
 {
-  const auto userNotes = valueTree.getProperty("userNotes").toString().toStdString();
-  if (!userNotes.empty())
+  if (valueTree.hasProperty("userNotes"))
   {
     LineWriter wLn{out};
     wLn("  # NOTES");
+    const auto userNotes = valueTree.getProperty("userNotes").toString().toStdString();
     for (const auto& line : split("\n", userNotes))
     {
       wLn("  #   ", line);
@@ -659,8 +659,8 @@ int main(int argc, char* argv[])
         wLn("  \"", element.second, "\"");
 
         if (exporterType == "XCODE_MAC"
-            && (!exporter.getProperty("prebuildCommand").toString().isEmpty()
-                || !exporter.getProperty("postbuildCommand").toString().isEmpty()))
+            && (exporter.hasProperty("prebuildCommand")
+                || exporter.hasProperty("postbuildCommand")))
         {
           wLn("  TARGET_PROJECT_FOLDER \"",
               exporter.getProperty("targetFolder").toString(),
@@ -736,10 +736,9 @@ int main(int argc, char* argv[])
 
         const auto getIconFilePath =
           [&mainGroup, &exporter](const juce::Identifier& propertyName) -> std::string {
-          const auto fileId = exporter.getProperty(propertyName).toString();
-
-          if (!fileId.isEmpty())
+          if (exporter.hasProperty(propertyName))
           {
+            const auto fileId = exporter.getProperty(propertyName).toString();
             const auto file = getChildWithPropertyRecursively(mainGroup, "id", fileId);
 
             if (file.isValid())
