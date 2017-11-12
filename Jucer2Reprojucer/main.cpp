@@ -422,6 +422,34 @@ int main(int argc, char* argv[])
     wLn("  PROJECT_TYPE \"", projectTypeDescription, "\"");
     wLn("  ", projectSetting("BUNDLE_IDENTIFIER", "bundleIdentifier"));
     wLn("  BINARYDATACPP_SIZE_LIMIT \"", maxBinaryFileSize, "\"");
+
+    if (jucerProject.hasProperty("cppLanguageStandard"))
+    {
+      const auto cppLanguageStandard = [&jucerProject]() -> std::string {
+        const auto value = jucerProject.getProperty("cppLanguageStandard").toString();
+
+        if (value == "11")
+          return "C++11";
+
+        if (value == "14")
+          return "C++14";
+
+        if (value == "latest")
+          return "Use Latest";
+
+        return {};
+      }();
+
+      if (cppLanguageStandard.empty())
+      {
+        wLn("  # CXX_LANGUAGE_STANDARD");
+      }
+      else
+      {
+        wLn("  CXX_LANGUAGE_STANDARD \"", cppLanguageStandard, "\"");
+      }
+    }
+
     wLn("  ", projectSetting("BINARYDATA_NAMESPACE", "binaryDataNamespace"));
     wLn("  ", projectSetting("PREPROCESSOR_DEFINITIONS", "defines"));
 
