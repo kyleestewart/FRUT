@@ -98,4 +98,8 @@ if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 
-install(TARGETS PListMerger DESTINATION ".")
+if(BUILT_BY_REPROJUCER)
+  install(TARGETS PListMerger DESTINATION ".")
+else()
+  install(TARGETS PListMerger DESTINATION "FRUT/cmake/bin")
+endif()

@@ -134,4 +134,8 @@ if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Linux")
 endif()
 
 
-install(TARGETS IconBuilder DESTINATION ".")
+if(BUILT_BY_REPROJUCER)
+  install(TARGETS IconBuilder DESTINATION ".")
+else()
+  install(TARGETS IconBuilder DESTINATION "FRUT/cmake/bin")
+endif()

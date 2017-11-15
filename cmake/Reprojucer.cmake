@@ -1265,6 +1265,7 @@ function(jucer_project_end)
         PListMerger install
         CMAKE_FLAGS
         "-DJUCE_modules_DIRS=${JUCER_PROJECT_MODULES_FOLDERS}"
+        "-DBUILT_BY_REPROJUCER=TRUE"
         "-DCMAKE_INSTALL_PREFIX=${Reprojucer.cmake_DIR}/bin"
       )
       if(NOT PListMerger)
@@ -1938,6 +1939,7 @@ function(__generate_JuceHeader_header)
         BinaryDataBuilder install
         CMAKE_FLAGS
         "-DJUCE_modules_DIRS=${JUCER_PROJECT_MODULES_FOLDERS}"
+        "-DBUILT_BY_REPROJUCER=TRUE"
         "-DCMAKE_INSTALL_PREFIX=${Reprojucer.cmake_DIR}/bin"
       )
       if(NOT BinaryDataBuilder)
@@ -2034,6 +2036,7 @@ function(__generate_icon_file icon_format out_icon_filename)
       IconBuilder install
       CMAKE_FLAGS
       "-DJUCE_modules_DIRS=${JUCER_PROJECT_MODULES_FOLDERS}"
+      "-DBUILT_BY_REPROJUCER=TRUE"
       "-DCMAKE_INSTALL_PREFIX=${Reprojucer.cmake_DIR}/bin"
     )
     if(NOT IconBuilder)
