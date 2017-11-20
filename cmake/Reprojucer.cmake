@@ -486,8 +486,8 @@ function(jucer_export_target exporter)
     list(APPEND export_target_settings_tags
       "VST3_SDK_FOLDER"
       "CUSTOM_XCODE_RESOURCE_FOLDERS"
-      "EXTRA_FRAMEWORKS"
       "CUSTOM_PLIST"
+      "EXTRA_FRAMEWORKS"
       "PREBUILD_SHELL_SCRIPT"
       "POSTBUILD_SHELL_SCRIPT"
       "DEVELOPMENT_TEAM_ID"
@@ -589,13 +589,13 @@ function(jucer_export_target exporter)
         string(REPLACE "," ";" value "${value}")
         set(JUCER_DOCUMENT_FILE_EXTENSIONS ${value} PARENT_SCOPE)
 
+      elseif(tag STREQUAL "CUSTOM_PLIST")
+        set(JUCER_CUSTOM_PLIST "${value}" PARENT_SCOPE)
+
       elseif(tag STREQUAL "EXTRA_FRAMEWORKS")
         string(REPLACE "," ";" value "${value}")
         string(REPLACE " " "" value "${value}")
         set(JUCER_EXTRA_FRAMEWORKS ${value} PARENT_SCOPE)
-
-      elseif(tag STREQUAL "CUSTOM_PLIST")
-        set(JUCER_CUSTOM_PLIST "${value}" PARENT_SCOPE)
 
       elseif(tag STREQUAL "PREBUILD_SHELL_SCRIPT")
         set(script_content "${value}")
