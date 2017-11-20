@@ -45,6 +45,7 @@ When ``<exporter>`` equals ``"Visual Studio 2017"``, ``"Visual Studio 2015"`` or
 
 - ``ARCHITECTURE``
 - ``CHARACTER_SET``
+- ``FORCE_GENERATION_OF_DEBUG_SYMBOLS`` (only if ``DEBUG_MODE`` is ``OFF``)
 - ``GENERATE_MANIFEST``
 - ``INCREMENTAL_LINKING``
 - ``POSTBUILD_COMMAND``

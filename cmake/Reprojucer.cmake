@@ -774,6 +774,10 @@ function(jucer_export_target_configuration
       "ARCHITECTURE"
       "RELAX_IEEE_COMPLIANCE"
     )
+
+    if(NOT is_debug)
+      list(APPEND configuration_settings_tags "FORCE_GENERATION_OF_DEBUG_SYMBOLS")
+    endif()
   endif()
 
   if(exporter STREQUAL "Linux Makefile")
@@ -985,6 +989,9 @@ function(jucer_export_target_configuration
 
       elseif(tag STREQUAL "INCREMENTAL_LINKING")
         set(JUCER_INCREMENTAL_LINKING_${config} ${value} PARENT_SCOPE)
+
+      elseif(tag STREQUAL "FORCE_GENERATION_OF_DEBUG_SYMBOLS")
+        set(JUCER_FORCE_GENERATION_OF_DEBUG_SYMBOLS_${config} ${value} PARENT_SCOPE)
 
       elseif(tag STREQUAL "PREBUILD_COMMAND")
         set(script_content "${value}")

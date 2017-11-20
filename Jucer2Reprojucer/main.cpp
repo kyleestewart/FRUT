@@ -898,8 +898,9 @@ int main(int argc, char* argv[])
           wLn("jucer_export_target_configuration(");
           wLn("  \"", std::get<1>(element), "\"");
           wLn("  NAME \"", configuration.getProperty("name").toString(), "\"");
-          wLn("  DEBUG_MODE ",
-              (bool{configuration.getProperty("isDebug")} ? "ON" : "OFF"));
+
+          const auto isDebug = bool{configuration.getProperty("isDebug")};
+          wLn("  DEBUG_MODE ", (isDebug ? "ON" : "OFF"));
 
           wLn("  ", getSetting(configuration, "BINARY_NAME", "targetName"));
           wLn("  ", getSetting(configuration, "BINARY_LOCATION", "binaryPath"));
@@ -1222,6 +1223,13 @@ int main(int argc, char* argv[])
 
             wLn("  ", getOnOffSetting(configuration, "INCREMENTAL_LINKING",
                                       "enableIncrementalLinking"));
+            if (!isDebug)
+            {
+              wLn("  ",
+                  getOnOffSetting(configuration, "FORCE_GENERATION_OF_DEBUG_SYMBOLS",
+                                  "alwaysGenerateDebugSymbols"));
+            }
+
             wLn("  ", getSetting(configuration, "PREBUILD_COMMAND", "prebuildCommand"));
             wLn("  ", getSetting(configuration, "POSTBUILD_COMMAND", "postbuildCommand"));
             wLn("  ",
