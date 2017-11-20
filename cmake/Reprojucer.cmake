@@ -2178,6 +2178,15 @@ function(__set_common_target_properties target)
     set_target_properties(${target} PROPERTIES CXX_EXTENSIONS OFF)
     set_target_properties(${target} PROPERTIES CXX_STANDARD 11)
 
+    if(CMAKE_GENERATOR STREQUAL "Xcode")
+      set_target_properties(${target} PROPERTIES
+        XCODE_ATTRIBUTE_GCC_WARN_ABOUT_RETURN_TYPE YES
+        XCODE_ATTRIBUTE_GCC_WARN_NON_VIRTUAL_DESTRUCTOR YES
+        XCODE_ATTRIBUTE_GCC_WARN_UNUSED_VARIABLE YES
+        XCODE_ATTRIBUTE_WARNING_CFLAGS -Wreorder
+      )
+    endif()
+
     set(config_to_value)
     foreach(config ${JUCER_PROJECT_CONFIGURATIONS})
       if(DEFINED JUCER_CXX_LANGUAGE_STANDARD_${config})
