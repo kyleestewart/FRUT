@@ -2175,11 +2175,12 @@ function(__set_common_target_properties target)
   target_link_libraries(${target} PRIVATE ${JUCER_EXTERNAL_LIBRARIES_TO_LINK})
 
   if(APPLE)
-    set_target_properties(${target} PROPERTIES CXX_EXTENSIONS OFF)
-    set_target_properties(${target} PROPERTIES CXX_STANDARD 11)
+    # set_target_properties(${target} PROPERTIES CXX_EXTENSIONS OFF)
+    # set_target_properties(${target} PROPERTIES CXX_STANDARD 11)
 
     if(CMAKE_GENERATOR STREQUAL "Xcode")
       set_target_properties(${target} PROPERTIES
+        XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11"
         XCODE_ATTRIBUTE_GCC_WARN_ABOUT_RETURN_TYPE YES
         XCODE_ATTRIBUTE_GCC_WARN_NON_VIRTUAL_DESTRUCTOR YES
         XCODE_ATTRIBUTE_GCC_WARN_UNUSED_VARIABLE YES
@@ -2187,39 +2188,39 @@ function(__set_common_target_properties target)
       )
     endif()
 
-    set(config_to_value)
-    foreach(config ${JUCER_PROJECT_CONFIGURATIONS})
-      if(DEFINED JUCER_CXX_LANGUAGE_STANDARD_${config})
-        list(APPEND all_confs_cxx_language_standard
-          ${JUCER_CXX_LANGUAGE_STANDARD_${config}}
-        )
-        string(APPEND config_to_value "  ${config}: "
-          "\"${JUCER_CXX_LANGUAGE_STANDARD_${config}}\"\n"
-        )
-      endif()
-    endforeach()
-    if(all_confs_cxx_language_standard)
-      list(GET all_confs_cxx_language_standard 0 cxx_language_standard)
-      list(REMOVE_DUPLICATES all_confs_cxx_language_standard)
-      list(LENGTH all_confs_cxx_language_standard all_confs_cxx_language_standard_length)
-      if(NOT all_confs_cxx_language_standard_length EQUAL 1)
-        message(STATUS "Different values for CXX_LANGUAGE_STANDARD:\n${config_to_value}"
-          "Falling back to the first value: \"${cxx_language_standard}\"."
-        )
-      endif()
-      if(cxx_language_standard MATCHES "^GNU\\+\\+")
-        set_target_properties(${target} PROPERTIES CXX_EXTENSIONS ON)
-      elseif(cxx_language_standard MATCHES "^C\\+\\+")
-        set_target_properties(${target} PROPERTIES CXX_EXTENSIONS OFF)
-      endif()
-      if(cxx_language_standard MATCHES "98$")
-        set_target_properties(${target} PROPERTIES CXX_STANDARD 98)
-      elseif(cxx_language_standard MATCHES "11$")
-        set_target_properties(${target} PROPERTIES CXX_STANDARD 11)
-      elseif(cxx_language_standard MATCHES "14$")
-        set_target_properties(${target} PROPERTIES CXX_STANDARD 14)
-      endif()
-    endif()
+    # set(config_to_value)
+    # foreach(config ${JUCER_PROJECT_CONFIGURATIONS})
+    #   if(DEFINED JUCER_CXX_LANGUAGE_STANDARD_${config})
+    #     list(APPEND all_confs_cxx_language_standard
+    #       ${JUCER_CXX_LANGUAGE_STANDARD_${config}}
+    #     )
+    #     string(APPEND config_to_value "  ${config}: "
+    #       "\"${JUCER_CXX_LANGUAGE_STANDARD_${config}}\"\n"
+    #     )
+    #   endif()
+    # endforeach()
+    # if(all_confs_cxx_language_standard)
+    #   list(GET all_confs_cxx_language_standard 0 cxx_language_standard)
+    #   list(REMOVE_DUPLICATES all_confs_cxx_language_standard)
+    #   list(LENGTH all_confs_cxx_language_standard all_confs_cxx_language_standard_length)
+    #   if(NOT all_confs_cxx_language_standard_length EQUAL 1)
+    #     message(STATUS "Different values for CXX_LANGUAGE_STANDARD:\n${config_to_value}"
+    #       "Falling back to the first value: \"${cxx_language_standard}\"."
+    #     )
+    #   endif()
+    #   if(cxx_language_standard MATCHES "^GNU\\+\\+")
+    #     set_target_properties(${target} PROPERTIES CXX_EXTENSIONS ON)
+    #   elseif(cxx_language_standard MATCHES "^C\\+\\+")
+    #     set_target_properties(${target} PROPERTIES CXX_EXTENSIONS OFF)
+    #   endif()
+    #   if(cxx_language_standard MATCHES "98$")
+    #     set_target_properties(${target} PROPERTIES CXX_STANDARD 98)
+    #   elseif(cxx_language_standard MATCHES "11$")
+    #     set_target_properties(${target} PROPERTIES CXX_STANDARD 11)
+    #   elseif(cxx_language_standard MATCHES "14$")
+    #     set_target_properties(${target} PROPERTIES CXX_STANDARD 14)
+    #   endif()
+    # endif()
 
     get_target_property(target_type ${target} TYPE)
 
