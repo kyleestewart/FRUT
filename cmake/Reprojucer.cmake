@@ -2653,7 +2653,7 @@ function(__link_osx_frameworks target)
 
   set(osx_frameworks ${ARGN})
 
-  if(APPLE)
+  if(APPLE AND osx_frameworks)
     if(JUCER_FLAG_JUCE_PLUGINHOST_AU)
       list(APPEND osx_frameworks "AudioUnit" "CoreAudioKit")
     endif()
