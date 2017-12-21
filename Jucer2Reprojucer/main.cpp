@@ -769,6 +769,12 @@ int main(int argc, char* argv[])
         wLn("  ",
             getSetting(exporter, "EXTERNAL_LIBRARIES_TO_LINK", "externalLibraries"));
 
+        if (exporter.hasProperty("enableGNUExtensions"))
+        {
+          wLn("  GNU_COMPILER_EXTENSIONS ",
+              (bool{exporter.getProperty("enableGNUExtensions")} ? "ON" : "OFF"));
+        }
+
         const auto mainGroup = jucerProject.getChildWithName("MAINGROUP");
 
         const auto getIconFilePath =
