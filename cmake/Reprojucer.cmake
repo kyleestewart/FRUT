@@ -1293,9 +1293,7 @@ function(jucer_project_end)
     configure_file("${Reprojucer_templates_DIR}/resources.rc"
       "JuceLibraryCode/resources.rc"
     )
-    list(APPEND JUCER_PROJECT_SOURCES
-      "${CMAKE_CURRENT_BINARY_DIR}/JuceLibraryCode/resources.rc"
-    )
+    set(resources_rc_file "${CMAKE_CURRENT_BINARY_DIR}/JuceLibraryCode/resources.rc")
   endif()
 
   source_group("Juce Library Code"
