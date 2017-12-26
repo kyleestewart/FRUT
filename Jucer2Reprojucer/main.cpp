@@ -825,6 +825,11 @@ int main(int argc, char* argv[])
 
         if (isVSExporter)
         {
+          if (exporter.hasProperty("msvcManifestFile"))
+          {
+            wLn("  ", getSetting(exporter, "MANIFEST_FILE", "msvcManifestFile"));
+          }
+
           const auto toolset = exporter.getProperty("toolset").toString().toStdString();
           if (toolset.empty())
           {

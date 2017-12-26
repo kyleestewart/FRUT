@@ -574,6 +574,7 @@ function(jucer_export_target exporter)
   if(exporter MATCHES "^Visual Studio 201(7|5|3)$")
     list(APPEND export_target_settings_tags
       "VST3_SDK_FOLDER"
+      "MANIFEST_FILE"
       "PLATFORM_TOOLSET"
       "USE_IPP_LIBRARY"
     )
@@ -694,6 +695,11 @@ function(jucer_export_target exporter)
           "\"Reprojucer.cmake doesn't support the setting DEVELOPMENT_TEAM_ID\" on "
           "GitHub: https://github.com/McMartin/FRUT/issues/251"
         )
+
+      elseif(tag STREQUAL "MANIFEST_FILE")
+        string(REPLACE "\\" "/" value "${value}")
+        __abs_path_based_on_jucer_project_dir("${value}" value)
+        set(JUCER_MANIFEST_FILE ${value} PARENT_SCOPE)
 
       elseif(tag STREQUAL "PLATFORM_TOOLSET")
         if((exporter STREQUAL "Visual Studio 2017"
